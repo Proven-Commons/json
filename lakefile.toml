@@ -1,0 +1,13 @@
+name = "json"
+version = "0.1.0"
+defaultTargets = ["Json", "Proofs", "json"]
+
+[[lean_lib]]
+name = "Json"
+
+[[lean_lib]]
+name = "Proofs"
+
+[[lean_exe]]
+name = "json"
+root = "Main"
