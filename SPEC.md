@@ -26,7 +26,32 @@ A number is held as its source text, checked against the RFC 8259 number grammar
 - an optional fraction part: a point followed by at least one digit;
 - an optional exponent part: `e` or `E`, an optional sign, and at least one digit.
 
-The printer writes the text back word for word, so a number round trips exactly. This library makes no claim about the numeric value of the text: it does not convert a number to an integer, a fraction, or a float, and it does not compare numbers.
+The printer writes the text back word for word, so a number round trips exactly. Inside a document, this library makes no claim about the numeric value of the text: it does not convert a number to an integer, a fraction, or a float, and it does not compare numbers.
+
+### The number value layer (slice 2)
+
+Separate from documents, a single number text can also be read as a value. A value is an exact decimal:
+
+- a sign: negative or not;
+- a significand: a natural number;
+- an exponent: an integer, the power of ten.
+
+The value is the sign times the significand times ten to the exponent. A value is held in one canonical form:
+
+- the zero value is held as sign positive, significand `0`, exponent `0`. Every spelling of zero reads to this one value, including `-0` and `0.0e5`;
+- a nonzero value is held normalized: its significand has no trailing zero (the last digit is not `0`).
+
+Reading a number text computes the value. The digits of the integer part and the fraction part fold into the significand, the exponent starts as the written exponent minus the number of fraction digits, and then trailing zeros of the significand are divided out into the exponent. A text whose digits are all zero collapses to the canonical zero. Reading turns away every text the grammar above turns away.
+
+The canonical text of a value is written under one rule, in plain decimal notation always, never in exponent notation:
+
+- work out where the point falls from the significand's digits and the exponent;
+- if the point falls past the last digit, write the digits and pad with zeros after them, with no point;
+- if the point falls inside the digits, write it there;
+- if the point falls before the first digit, write `0`, a point, the zeros the point position calls for, and then the digits;
+- a negative nonzero value gets a minus sign in front. Zero writes as `0`.
+
+Because the held form is unique per value, two texts with the same value have the same canonical text.
 
 ## Strings
 
@@ -59,8 +84,14 @@ The printer writes a value with no spaces anywhere: commas and colons with nothi
 
 The proved claim is a round trip: for every well formed value, parsing what the printer wrote returns the same value. Well formed means the value follows the rules above: a number's text matches the number grammar, and every value inside an array or object is well formed too. Strings and keys need no further condition: every list of characters prints and reads back.
 
-No claim is made that the parser accepts every text the RFC grammar allows, or rejects every text it forbids, beyond what the round trip needs. The test suite checks that behaviour against JSONTestSuite and against Python's `json` module, and the results record the counts.
+The number layer carries its own proved claims:
+
+- Value round trip: for every well formed decimal value (held in the canonical form above), reading its canonical text gives the value back. No bound on the value is needed: the digits and the zero padding are finite for every held value, so the canonical text is finite and the reader takes it whole.
+- Every value the reader returns is well formed, so the canonical text of a text's value re-reads to that same value.
+- Two texts with the same value have the same canonical text.
+
+No claim is made that the parser accepts every text the RFC grammar allows, or rejects every text it forbids, beyond what the round trip needs. The test suite checks that behaviour against JSONTestSuite and against Python's `json` module, and the results record the counts. For the number layer, the tests check the reader and the canonical printer against Python's `decimal` module as the value oracle, over fixed cases, random texts in every grammar shape, groups of spellings of one value, and grammar rejections.
 
 ## The command-line tool
 
-`Main.lean` reads one request per line. The only operation is `parse`: the request is the word `parse`, a space, and the character codes of a JSON text as comma-separated decimal numbers. The answer is `ok:` followed by the character codes of the canonical print of the parsed value, or `none` when the text is rejected. A malformed request line prints `error`. Codes that are not Unicode scalar values make the request malformed.
+`Main.lean` reads one request per line. There are two operations. `parse`: the request is the word `parse`, a space, and the character codes of a JSON text as comma-separated decimal numbers. The answer is `ok:` followed by the character codes of the canonical print of the parsed value, or `none` when the text is rejected. `num`: the request is the word `num`, a space, and the character codes of a number text. The answer is `ok:` followed by the character codes of the canonical text of the text's value, under the number layer above, or `none` when the text is not a number by the grammar. A malformed request line prints `error`. Codes that are not Unicode scalar values make the request malformed.

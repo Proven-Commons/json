@@ -8,11 +8,19 @@
     parse 91,34,97,34,93   prints  ok:91,34,97,34,93
     parse 91,93            prints  ok:91,93
     parse 120               prints  none
+    num 49,46,53,48        prints  ok:49,46,53
+    num 48,49               prints  none
 
-  The one operation is `parse`. Its input is the character codes of
-  a JSON text. Its answer is `ok:` and the character codes of the
-  canonical print of the parsed value, or `none` when the text is
-  rejected.
+  The operations are `parse` and `num`. The input of `parse` is
+  the character codes of a JSON text. Its answer is `ok:` and the
+  character codes of the canonical print of the parsed value, or
+  `none` when the text is rejected.
+
+  The input of `num` is the character codes of a number text.
+  Its answer is `ok:` and the character codes of the canonical
+  text of the number's value (slice 2: the exact decimal value,
+  printed in plain notation), or `none` when the text is not a
+  number by the grammar of RFC 8259.
 
   A request is an operation, then optionally one space and its
   numbers; with no numbers after the space, the input is empty. A
@@ -58,6 +66,13 @@ def answer (op : String) (ns : List Nat) : Option String :=
     | some cs =>
       match parse cs with
       | some v => some ("ok:" ++ showCodes (print v))
+      | none => some "none"
+  | "num" =>
+    match toChars ns with
+    | none => none
+    | some cs =>
+      match readNumber cs with
+      | some v => some ("ok:" ++ showCodes (printVal v))
       | none => some "none"
   | _ => none
 
