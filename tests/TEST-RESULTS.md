@@ -16,3 +16,13 @@ Written by `tests/run_tests.py`. Rerun it to check these numbers.
 - Malformed requests answered error: 12 of 12
 - Requests with no codes answered none: 2 of 2
 - Failures: 0
+
+## Axiom check
+
+Recorded on 2026-10-26 against the head of this pull request, on Lean 4.35.0. This slice holds no Verify file. The line below is the output of a file holding `#print axioms Json.Proofs.parse_print` and an import of the proofs, run with `lake env lean` in a copy of this tree after a clean `lake build` (14 jobs).
+
+```text
+'Json.Proofs.parse_print' depends on axioms: [propext, Classical.choice, Quot.sound]
+```
+
+No other axiom is named, and sorryAx is not named.
