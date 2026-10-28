@@ -24,4 +24,16 @@ Written by `tests/run_tests.py`. Rerun it to check these numbers.
 - Number canonical texts fed back: 3000 inputs, 3000 agreements
 - Malformed num requests answered error: 10 of 10
 - Num requests with no codes answered none: 2 of 2
+- Number printing limit cases (over 10000 digits answers none, at the limit prints): 4 inputs, 4 agreements
+
+## Axiom check
+
+The output of `#print axioms` for the five named theorems, from `lake env lean Proofs/Verify.lean`:
+
+- 'Json.Proofs.parse_print' depends on axioms: [propext, Classical.choice, Quot.sound]
+- 'Json.NumProofs.read_print' depends on axioms: [propext, Quot.sound]
+- 'Json.NumProofs.readNumber_wf' depends on axioms: [propext, Quot.sound]
+- 'Json.NumProofs.read_print_of_read' depends on axioms: [propext, Quot.sound]
+- 'Json.NumProofs.canonical_eq_of_value_eq' depends on axioms: [propext]
+
 - Failures: 0

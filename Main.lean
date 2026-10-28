@@ -20,7 +20,12 @@
   Its answer is `ok:` and the character codes of the canonical
   text of the number's value (slice 2: the exact decimal value,
   printed in plain notation), or `none` when the text is not a
-  number by the grammar of RFC 8259.
+  number by the grammar of RFC 8259. The answer is also `none`
+  when the plain notation of the value would hold more than
+  10000 digits: printing expands the exponent into zeros, and
+  that expansion is refused past the limit stated in SPEC.md.
+  That refusal is a limit on printing, not a reading error:
+  the text still reads as a number.
 
   A request is an operation, then optionally one space and its
   numbers; with no numbers after the space, the input is empty. A
@@ -56,6 +61,28 @@ def toChars (ns : List Nat) : Option (List Char) :=
 def showCodes (cs : List Char) : String :=
   ",".intercalate (cs.map fun c => toString c.toNat)
 
+/-- The most digits the `num` operation will print in plain
+    notation. The limit is stated in SPEC.md. It sits far past
+    any number a real JSON document carries, and it keeps a
+    short text with a huge exponent, such as `1e999999999`,
+    from asking for unbounded time and memory. -/
+def maxPlainDigits : Nat := 10000
+
+/-- The number of digit characters in the plain notation of
+    a value, worked out from the length of the significand
+    and the exponent alone. The printed text is never built
+    to count it, so a value far past the limit is refused
+    without the expansion the limit guards against. A minus
+    sign and a decimal point are not digits and do not count. -/
+def plainDigitCount (v : DecVal) : Nat :=
+  if v.sig = 0 then 1
+  else
+    let len := (digitsOf v.sig).length
+    if v.exp ≥ 0 then len + v.exp.toNat
+    else
+      let p : Int := (len : Int) + v.exp
+      if p > 0 then len else len + 1 + (-p).toNat
+
 /-- The answer to one request, or `none` when the request is
     malformed. -/
 def answer (op : String) (ns : List Nat) : Option String :=
@@ -72,7 +99,10 @@ def answer (op : String) (ns : List Nat) : Option String :=
     | none => none
     | some cs =>
       match readNumber cs with
-      | some v => some ("ok:" ++ showCodes (printVal v))
+      | some v =>
+        if plainDigitCount v ≤ maxPlainDigits then
+          some ("ok:" ++ showCodes (printVal v))
+        else some "none"
       | none => some "none"
   | _ => none
 

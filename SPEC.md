@@ -51,6 +51,8 @@ The canonical text of a value is written under one rule, in plain decimal notati
 - if the point falls before the first digit, write `0`, a point, the zeros the point position calls for, and then the digits;
 - a negative nonzero value gets a minus sign in front. Zero writes as `0`.
 
+The command-line tool sets one limit on this printing. If the plain notation of a value would hold more than 10,000 digits, the `num` operation answers `none` instead of printing it. The limit sits far past any number a real JSON document carries, and it stops a short text such as `1e999999999` from asking for unbounded time and memory. This is a refusal to print, not a reading error: the text still reads as a number, and the value layer itself sets no bound. A `parse` request is not affected either, because a number inside a document prints word for word and never expands an exponent.
+
 Because the held form is unique per value, two texts with the same value have the same canonical text.
 
 ## Strings
@@ -86,7 +88,7 @@ The proved claim is a round trip: for every well formed value, parsing what the 
 
 The number layer carries its own proved claims:
 
-- Value round trip: for every well formed decimal value (held in the canonical form above), reading its canonical text gives the value back. No bound on the value is needed: the digits and the zero padding are finite for every held value, so the canonical text is finite and the reader takes it whole.
+- Value round trip: for every well formed decimal value (held in the canonical form above), reading its canonical text gives the value back. No bound on the value is needed: the digits and the zero padding are finite for every held value, so the canonical text is finite and the reader takes it whole. The 10,000 digit limit above belongs to the command-line tool's `num` operation only. It is not part of this claim and it does not change the library printer or this theorem.
 - Every value the reader returns is well formed, so the canonical text of a text's value re-reads to that same value.
 - Two texts with the same value have the same canonical text.
 
@@ -94,4 +96,4 @@ No claim is made that the parser accepts every text the RFC grammar allows, or r
 
 ## The command-line tool
 
-`Main.lean` reads one request per line. There are two operations. `parse`: the request is the word `parse`, a space, and the character codes of a JSON text as comma-separated decimal numbers. The answer is `ok:` followed by the character codes of the canonical print of the parsed value, or `none` when the text is rejected. `num`: the request is the word `num`, a space, and the character codes of a number text. The answer is `ok:` followed by the character codes of the canonical text of the text's value, under the number layer above, or `none` when the text is not a number by the grammar. A malformed request line prints `error`. Codes that are not Unicode scalar values make the request malformed.
+`Main.lean` reads one request per line. There are two operations. `parse`: the request is the word `parse`, a space, and the character codes of a JSON text as comma-separated decimal numbers. The answer is `ok:` followed by the character codes of the canonical print of the parsed value, or `none` when the text is rejected. `num`: the request is the word `num`, a space, and the character codes of a number text. The answer is `ok:` followed by the character codes of the canonical text of the text's value, under the number layer above, or `none` when the text is not a number by the grammar. The answer is also `none` when the plain notation of the value would hold more than 10,000 digits, the printing limit stated in the number layer above. A malformed request line prints `error`. Codes that are not Unicode scalar values make the request malformed.

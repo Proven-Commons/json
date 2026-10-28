@@ -54,7 +54,16 @@ Two parts.
    spellings of one value) must all answer with the one
    canonical text. Grammar rejections must answer `none`.
    Canonical answers are fed back in and must answer with
-   themselves.
+   themselves. The printing limit is exercised too: a text
+   whose plain notation would hold more than 10,000 digits
+   must answer `none`, and a text at the limit must print.
+
+   The results file also carries an Axiom check section. The
+   harness runs `lake env lean Proofs/Verify.lean`, which
+   prints the axioms of the headline theorems with
+   `#print axioms`, and writes that output into the section.
+   If the run fails or a named theorem is missing from the
+   output, the harness records a failure instead.
 
     python3 tests/run_tests.py [--seed N] [--count N]
 
@@ -949,6 +958,41 @@ def run_numbers():
         else:
             failures.append(f"empty num request: want none, got {ans!r}")
     lines.append(f"Num requests with no codes answered none: {empty_ok} of 2")
+    # 7. the printing limit: plain notation past 10,000 digits
+    # answers none, and a value at the limit still prints. The
+    # boundary answer holds 10,000 digits, far more text than
+    # its request, so this batch runs with a larger output cap.
+    limit_cases = [
+        ("1e999999999", None),
+        ("1e-999999999", None),
+        ("1e10000", None),
+        ("1e9999", canonical_number("1e9999")),
+    ]
+    limit_ok = 0
+    answers, problems = ask_all(
+        [num_request(t) for t, _ in limit_cases], cap_factor=8192
+    )
+    for problem in problems:
+        failures.append(f"number limit: tool problem: {problem}")
+    for (text, want), ans in zip(limit_cases, answers):
+        if want is None:
+            good = ans == "none"
+            want_desc = "none"
+        else:
+            good = answer_text(ans) == want
+            want_desc = f"ok with {len(want)} digits"
+        if good:
+            limit_ok += 1
+        else:
+            failures.append(
+                f"number limit {text!r}: want {want_desc}, got "
+                f"{(ans or '')[:60]!r}"
+            )
+    lines.append(
+        f"Number printing limit cases (over 10000 digits answers "
+        f"none, at the limit prints): {len(limit_cases)} inputs, "
+        f"{limit_ok} agreements"
+    )
     return lines, failures
 
 
@@ -991,6 +1035,41 @@ def main():
         timeout=120,
     ).stdout.strip()
 
+    # The axiom check: Proofs/Verify.lean prints the axioms of
+    # the five named theorems with `#print axioms`. Its output
+    # goes into the results file, in the Axiom check section.
+    # A failed run, a missing line, or a line that does not name
+    # its theorem is recorded as a failure, never passed over.
+    axiom_names = [
+        "Json.Proofs.parse_print",
+        "Json.NumProofs.read_print",
+        "Json.NumProofs.readNumber_wf",
+        "Json.NumProofs.read_print_of_read",
+        "Json.NumProofs.canonical_eq_of_value_eq",
+    ]
+    axiom_run = subprocess.run(
+        ["lake", "env", "lean", "Proofs/Verify.lean"],
+        cwd=ROOT,
+        capture_output=True,
+        text=True,
+        timeout=600,
+    )
+    axiom_lines = [
+        line for line in axiom_run.stdout.strip().splitlines() if line.strip()
+    ]
+    if (
+        axiom_run.returncode != 0
+        or len(axiom_lines) != len(axiom_names)
+        or any(
+            name not in line
+            for name, line in zip(axiom_names, axiom_lines)
+        )
+    ):
+        all_failures.append(
+            "axiom check: running Proofs/Verify.lean gave "
+            f"status {axiom_run.returncode} and lines {axiom_lines!r}"
+        )
+
     out = ["# Test results", ""]
     out.append("Written by `tests/run_tests.py`. Rerun it to check these numbers.")
     out.append("")
@@ -1002,6 +1081,17 @@ def main():
     out.append(f"- Number seed: {NUM_SEED}")
     for line in all_lines:
         out.append(f"- {line}")
+    out.append("")
+    out.append("## Axiom check")
+    out.append("")
+    out.append(
+        "The output of `#print axioms` for the five named theorems, "
+        "from `lake env lean Proofs/Verify.lean`:"
+    )
+    out.append("")
+    for line in axiom_lines:
+        out.append(f"- {line}")
+    out.append("")
     out.append(f"- Failures: {len(all_failures)}")
     for failure in all_failures[:50]:
         out.append(f"- FAILURE: {failure}")

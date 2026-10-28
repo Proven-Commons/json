@@ -30,7 +30,7 @@ The command-line tool in `Main.lean` calls these functions directly.
 - Numeric value inside documents. A number in a document is still held as its source text, checked against the number grammar, and printed word for word. The value layer is separate: it reads one number text at a time, through the `num` request, and documents do not use it.
 - Object lookup. Duplicate keys are kept as written, in order, and no claim is made about which pair a lookup would find. There is no lookup function.
 - Reading requests and printing answers in `Main.lean`: splitting lines, the decimal parser, and the check that a code is a Unicode scalar value. The tests cover them, malformed requests included.
-- Speed. The code works on lists of characters, which suits proofs, not large data. The parser also bounds nesting by the length of the input text, which very deep inputs can reach.
+- Speed. The code works on lists of characters, which suits proofs, not large data. The parser also bounds nesting by the length of the input text, which very deep inputs can reach. One printing limit does apply at the tool: the `num` operation answers `none` when the plain notation of a value would hold more than 10,000 digits, instead of expanding a huge exponent into zeros. That limit is the tool's alone. The number still reads as a value, and the library printer and its round trip proof carry no bound.
 
 Two deliberate choices, also stated in `SPEC.md`:
 
