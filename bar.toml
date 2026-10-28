@@ -1,0 +1,52 @@
+# Read by bar/check.py in Proven-Commons/mission.
+# See playbook/verified-bar.md there for what each field means.
+
+[project]
+name = "json"
+# "in-progress" until every bar item passes, then "verified".
+status = "in-progress"
+page = "README.md"
+# GitHub handles of everyone who wrote the specification.
+spec_authors = ["abu-aska"]
+# The program people run. A change to it voids the approval.
+entry_points = ["Main.lean"]
+
+[spec]
+files = ["SPEC.md", "Spec.lean"]
+# The code under proof: the functions the statements are about.
+code = [
+  # The data types the statements are about, and their constructors.
+  "Json.Json", "Json.Json.null", "Json.Json.bool", "Json.Json.num",
+  "Json.Json.str", "Json.Json.arr", "Json.Json.obj",
+  "Json.DecVal",
+  # The document printer.
+  "Json.hexDigits", "Json.hexDigit", "Json.escape", "Json.escapeAll",
+  "Json.printStr", "Json.join", "Json.print", "Json.printPair",
+  # Document well formedness.
+  "Json.IsDigit", "Json.FracOk", "Json.ExpOk", "Json.WFNum", "Json.WF",
+  # The document parser.
+  "Json.isWs", "Json.skipWs", "Json.isDigit", "Json.hexVal",
+  "Json.simpleEscape", "Json.parseStrBody", "Json.takeDigits",
+  "Json.parseIntPart", "Json.parseFracOpt", "Json.parseExpOpt",
+  "Json.parseNumber", "Json.parseValue", "Json.parseEls",
+  "Json.parseObjEls", "Json.parse",
+  # The number value layer: its well formedness, reader, and
+  # canonical printer.
+  "Json.decZero", "Json.WFVal", "Json.digitStep", "Json.foldDigits",
+  "Json.natOfDigits", "Json.digitVal", "Json.digitChars",
+  "Json.stripAux", "Json.valueOfDigits", "Json.expValOfChars",
+  "Json.readNumberFrom", "Json.readNumber", "Json.digsRevAux",
+  "Json.digitsOf", "Json.powVal", "Json.printVal", "Json.canonicalText",
+]
+
+# One entry per approval, added in a pull request the reviewer approves.
+# [[spec.approval]]
+# reviewer = "github-handle"
+# date = "2026-11-02"
+# sha256 = "..."
+# record = "https://github.com/Proven-Commons/json/pull/<n>"
+
+[tests]
+results = "tests/TEST-RESULTS.md"
+command = "python3 tests/run_tests.py"
+files = ["tests/run_tests.py"]

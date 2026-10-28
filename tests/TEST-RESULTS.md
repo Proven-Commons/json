@@ -5,6 +5,7 @@ Written by `tests/run_tests.py`. Rerun it to check these numbers.
 - Oracle: Python 3.12.3 `json` (strict constants)
 - Lean: Lean (version 4.35.0, x86_64-unknown-linux-gnu, commit eb6cafb7290e8bd5f2937522d8d804f58f02bafc, Release)
 - Seed: 20261025
+- Number seed: 20261026
 - JSONTestSuite: clone found, test_parsing used
 - JSONTestSuite y_ files accepted with a stable reprint: 95 of 95
 - JSONTestSuite n_ files rejected: 188 of 188
@@ -15,14 +16,24 @@ Written by `tests/run_tests.py`. Rerun it to check these numbers.
 - Cases where Python accepts a lone surrogate escape and Lean rejects it (named difference): 7
 - Malformed requests answered error: 12 of 12
 - Requests with no codes answered none: 2 of 2
-- Failures: 0
+- Number fixed cases: 68 inputs, 68 agreements
+- Number random cases (seed 20261026): 3000 inputs, 3000 agreements
+- Number random bounds: written exponent between -60 and 60, at most 40 digits per text
+- Number equal-value groups: 7 groups, 43 spellings, 7 groups with one canonical text
+- Number rejections answered none: 35 of 35
+- Number canonical texts fed back: 3000 inputs, 3000 agreements
+- Malformed num requests answered error: 10 of 10
+- Num requests with no codes answered none: 2 of 2
+- Number printing limit cases (over 10000 digits answers none, at the limit prints): 4 inputs, 4 agreements
 
 ## Axiom check
 
-Recorded on 2026-10-26 against the head of this pull request, on Lean 4.35.0. This slice holds no Verify file. The line below is the output of a file holding `#print axioms Json.Proofs.parse_print` and an import of the proofs, run with `lake env lean` in a copy of this tree after a clean `lake build` (14 jobs).
+The output of `#print axioms` for the five named theorems, from `lake env lean Proofs/Verify.lean`:
 
-```text
-'Json.Proofs.parse_print' depends on axioms: [propext, Classical.choice, Quot.sound]
-```
+- 'Json.Proofs.parse_print' depends on axioms: [propext, Classical.choice, Quot.sound]
+- 'Json.NumProofs.read_print' depends on axioms: [propext, Quot.sound]
+- 'Json.NumProofs.readNumber_wf' depends on axioms: [propext, Quot.sound]
+- 'Json.NumProofs.read_print_of_read' depends on axioms: [propext, Quot.sound]
+- 'Json.NumProofs.canonical_eq_of_value_eq' depends on axioms: [propext]
 
-No other axiom is named, and sorryAx is not named.
+- Failures: 0
