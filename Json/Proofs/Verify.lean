@@ -6,8 +6,8 @@
   other name here breaks the verified bar.
 -/
 
-import Proofs.RoundTrip
-import Proofs.NumRoundTrip
+import Json.Proofs.RoundTrip
+import Json.Proofs.NumRoundTrip
 
 #print axioms Json.Proofs.parse_print
 #print axioms Json.NumProofs.read_print

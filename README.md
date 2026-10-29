@@ -4,7 +4,7 @@ Status: in-progress
 
 A JSON parser and printer in Lean, following RFC 8259. The parser reads a JSON text into a value; the printer writes a value back in one fixed canonical form, with no spaces, object keys in the order held, and strings escaped by fixed rules. The main claim is proved: parsing what the printer wrote returns the same value. Slice 2 adds a number value layer: a single number text can be read as an exact decimal value, held in a canonical normalized form, and printed back as one canonical text in plain notation. Its round trip is proved too. The definitions are in `Json/Value.lean` (the value type, the printer, and the well-formedness rules), `Json/Parse.lean` (the parser), and `Json/Number.lean` (the decimal value, its reader, and its canonical printer). The rules are written out in `SPEC.md`.
 
-The statements a reviewer approves are in `Spec.lean`, with their proofs in `Proofs/SpecProofs.lean`. No reviewer has approved them yet, so this project is not called verified.
+The statements a reviewer approves are in `Json/Spec.lean`, with their proofs in `Json/Proofs/SpecProofs.lean`. No reviewer has approved them yet, so this project is not called verified.
 
 ## How to run it
 
@@ -21,30 +21,30 @@ That request is the text `["a"]` as character codes, and the answer is `ok:91,34
 
 ## What is proved
 
-Each claim below names the theorem behind it. The theorems are stated in `Spec.lean` (the challenge file, where they end in `sorry`) and proved in `Proofs/SpecProofs.lean`, under the same names. `comparator.json` lists all of them.
+Each claim below names the theorem behind it. The theorems are stated in `Json/Spec.lean` (the challenge file, where they end in `sorry`) and proved in `Json/Proofs/SpecProofs.lean`, under the same names. `comparator.json` lists all of them.
 
 | Claim | Theorem |
 |-------|---------|
-| Parsing the printed form of a well formed value gives the value back. | `Spec.parse_print` |
-| Reading the canonical text of a well formed decimal value gives the value back. | `Spec.read_print` |
-| Every value the number reader returns is well formed (canonical zero, or a significand with no trailing zero). | `Spec.readNumber_wf` |
-| The canonical text of a text's value re-reads to that value. | `Spec.read_print_of_read` |
-| Two texts with the same value have the same canonical text. | `Spec.canonical_eq_of_value_eq` |
-| Characters standing after a complete value, past the whitespace the grammar allows, are refused: the text `1 x`. | `Spec.rejects_trailing_after_value` |
-| A literal that is none of `true`, `false`, and `null` is refused: the text `trux`. | `Spec.rejects_bad_literal` |
-| A number with a leading zero inside a document is refused: the text `01`. | `Spec.rejects_leading_zero_in_document` |
-| A bare minus sign is refused as a number text: the text `-`. | `Spec.rejects_num_lone_minus` |
-| A number text with a leading zero is refused: the text `01`. | `Spec.rejects_num_leading_zero` |
-| A number text ending in a point with no digit after it is refused: the text `1.`. | `Spec.rejects_num_trailing_point` |
-| A number text with a point and no integer part before it is refused: the text `.5`. | `Spec.rejects_num_leading_point` |
-| A number text whose exponent letter has no digits after it is refused: the text `1e`. | `Spec.rejects_num_bare_exponent` |
-| A number text whose exponent sign has no digits after it is refused: the text `1e+`. | `Spec.rejects_num_exponent_sign_only` |
-| A number text with a leading plus sign is refused: the text `+1`. | `Spec.rejects_num_leading_plus` |
-| A number text with a letter where a digit must stand is refused: the text `1a`. | `Spec.rejects_num_nondigit` |
+| Parsing the printed form of a well formed value gives the value back. | `Json.Spec.parse_print` |
+| Reading the canonical text of a well formed decimal value gives the value back. | `Json.Spec.read_print` |
+| Every value the number reader returns is well formed (canonical zero, or a significand with no trailing zero). | `Json.Spec.readNumber_wf` |
+| The canonical text of a text's value re-reads to that value. | `Json.Spec.read_print_of_read` |
+| Two texts with the same value have the same canonical text. | `Json.Spec.canonical_eq_of_value_eq` |
+| Characters standing after a complete value, past the whitespace the grammar allows, are refused: the text `1 x`. | `Json.Spec.rejects_trailing_after_value` |
+| A literal that is none of `true`, `false`, and `null` is refused: the text `trux`. | `Json.Spec.rejects_bad_literal` |
+| A number with a leading zero inside a document is refused: the text `01`. | `Json.Spec.rejects_leading_zero_in_document` |
+| A bare minus sign is refused as a number text: the text `-`. | `Json.Spec.rejects_num_lone_minus` |
+| A number text with a leading zero is refused: the text `01`. | `Json.Spec.rejects_num_leading_zero` |
+| A number text ending in a point with no digit after it is refused: the text `1.`. | `Json.Spec.rejects_num_trailing_point` |
+| A number text with a point and no integer part before it is refused: the text `.5`. | `Json.Spec.rejects_num_leading_point` |
+| A number text whose exponent letter has no digits after it is refused: the text `1e`. | `Json.Spec.rejects_num_bare_exponent` |
+| A number text whose exponent sign has no digits after it is refused: the text `1e+`. | `Json.Spec.rejects_num_exponent_sign_only` |
+| A number text with a leading plus sign is refused: the text `+1`. | `Json.Spec.rejects_num_leading_plus` |
+| A number text with a letter where a digit must stand is refused: the text `1a`. | `Json.Spec.rejects_num_nondigit` |
 
 A document value is well formed when a number's text matches the RFC 8259 number grammar and every value inside an array or object is well formed too. Strings and keys need no further condition. A decimal value is well formed when it is held in the canonical form: the zero value as sign positive, significand `0`, exponent `0`, and a nonzero value with no trailing zero in its significand. The value round trip needs no bound on the value: the canonical text is finite for every held value.
 
-The five claims rest on the proofs in `Proofs/RoundTrip.lean` and `Proofs/NumRoundTrip.lean`, where they are `Json.Proofs.parse_print`, `Json.NumProofs.read_print`, `Json.NumProofs.readNumber_wf`, `Json.NumProofs.read_print_of_read`, and `Json.NumProofs.canonical_eq_of_value_eq`. `Spec.parse_print` checks against the standard axioms only (`propext`, `Classical.choice`, `Quot.sound`); `Spec.read_print`, `Spec.readNumber_wf`, and `Spec.read_print_of_read` against `propext` and `Quot.sound` only; and `Spec.canonical_eq_of_value_eq` against `propext` only. A reader can confirm this with `#print axioms`, or by running `lake env lean Proofs/Verify.lean`. The test harness writes that output into the Axiom check section of `tests/TEST-RESULTS.md` on every run. The refusal theorems are single inputs checked in the kernel with `decide +kernel`.
+The five claims rest on the proofs in `Json/Proofs/RoundTrip.lean` and `Json/Proofs/NumRoundTrip.lean`, where they are `Json.Proofs.parse_print`, `Json.NumProofs.read_print`, `Json.NumProofs.readNumber_wf`, `Json.NumProofs.read_print_of_read`, and `Json.NumProofs.canonical_eq_of_value_eq`. `Json.Spec.parse_print` checks against the standard axioms only (`propext`, `Classical.choice`, `Quot.sound`); `Json.Spec.read_print`, `Json.Spec.readNumber_wf`, and `Json.Spec.read_print_of_read` against `propext` and `Quot.sound` only; and `Json.Spec.canonical_eq_of_value_eq` against `propext` only. A reader can confirm this with `#print axioms`, or by running `lake env lean Json/Proofs/Verify.lean`. The test harness writes that output into the Axiom check section of `tests/TEST-RESULTS.md` on every run. The refusal theorems are single inputs checked in the kernel with `decide +kernel`.
 
 The command line tool in `Main.lean` calls `Json.parse`, `Json.print`, `Json.readNumber`, and `Json.printVal` directly, the same functions the theorems are about.
 
@@ -76,7 +76,7 @@ The command line tool in `Main.lean` calls `Json.parse`, `Json.print`, `Json.rea
 
 ## Re-check it
 
-1. `lake comparator --paranoid`: builds the challenge file `Spec.lean` and the proofs in a sandbox and checks that each theorem named in `comparator.json` proves exactly the statement in the challenge file, uses no axiom but the three standard ones, and is accepted by Lean's kernel and every other kernel shipped with Lean.
+1. `lake comparator --paranoid`: builds the challenge file `Json/Spec.lean` and the proofs in a sandbox and checks that each theorem named in `comparator.json` proves exactly the statement in the challenge file, uses no axiom but the three standard ones, and is accepted by Lean's kernel and every other kernel shipped with Lean.
 2. `python3 tests/run_tests.py`: JSONTestSuite if a clone is found, the differential against Python's `json` module, the number layer against Python's `decimal` module, and the axiom check, with counts and any failures written to `tests/TEST-RESULTS.md`.
-3. `lake build`: the library, the proofs, and the tool build clean, and `lake env lean Proofs/Verify.lean` prints the axiom list for the five headline theorems.
+3. `lake build`: the library, the proofs, and the tool build clean, and `lake env lean Json/Proofs/Verify.lean` prints the axiom list for the five headline theorems.
 4. Read `SPEC.md` against RFC 8259 and check the pinned readings are the ones you want.

@@ -1,16 +1,18 @@
 name = "json"
 version = "0.1.0"
 license = "Apache-2.0"
-defaultTargets = ["Json", "Proofs", "json"]
+defaultTargets = ["Json", "JsonSpec", "JsonProofs", "json"]
 
 [[lean_lib]]
 name = "Json"
 
 [[lean_lib]]
-name = "Proofs"
+name = "JsonSpec"
+roots = ["Json.Spec"]
 
 [[lean_lib]]
-name = "Spec"
+name = "JsonProofs"
+roots = ["Json.Proofs"]
 
 [[lean_exe]]
 name = "json"
