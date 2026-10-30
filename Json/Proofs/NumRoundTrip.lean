@@ -22,7 +22,7 @@
 -/
 
 import Json
-import Proofs.RoundTrip
+import Json.Proofs.RoundTrip
 
 namespace Json.NumProofs
 

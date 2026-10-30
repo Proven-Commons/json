@@ -59,7 +59,7 @@ Two parts.
    must answer `none`, and a text at the limit must print.
 
    The results file also carries an Axiom check section. The
-   harness runs `lake env lean Proofs/Verify.lean`, which
+   harness runs `lake env lean Json/Proofs/Verify.lean`, which
    prints the axioms of the headline theorems with
    `#print axioms`, and writes that output into the section.
    If the run fails or a named theorem is missing from the
@@ -1035,7 +1035,7 @@ def main():
         timeout=120,
     ).stdout.strip()
 
-    # The axiom check: Proofs/Verify.lean prints the axioms of
+    # The axiom check: Json/Proofs/Verify.lean prints the axioms of
     # the five named theorems with `#print axioms`. Its output
     # goes into the results file, in the Axiom check section.
     # A failed run, a missing line, or a line that does not name
@@ -1048,7 +1048,7 @@ def main():
         "Json.NumProofs.canonical_eq_of_value_eq",
     ]
     axiom_run = subprocess.run(
-        ["lake", "env", "lean", "Proofs/Verify.lean"],
+        ["lake", "env", "lean", "Json/Proofs/Verify.lean"],
         cwd=ROOT,
         capture_output=True,
         text=True,
@@ -1066,7 +1066,7 @@ def main():
         )
     ):
         all_failures.append(
-            "axiom check: running Proofs/Verify.lean gave "
+            "axiom check: running Json/Proofs/Verify.lean gave "
             f"status {axiom_run.returncode} and lines {axiom_lines!r}"
         )
 
@@ -1086,7 +1086,7 @@ def main():
     out.append("")
     out.append(
         "The output of `#print axioms` for the five named theorems, "
-        "from `lake env lean Proofs/Verify.lean`:"
+        "from `lake env lean Json/Proofs/Verify.lean`:"
     )
     out.append("")
     for line in axiom_lines:

@@ -1,6 +1,6 @@
 # Specification: json
 
-A JSON parser and printer in Lean, following RFC 8259. A reviewer who did not write this specification approves it, together with the statement file. The statements are in `Spec.lean` and their proofs are in `Proofs/SpecProofs.lean`; no reviewer has approved them yet, so nothing here counts toward the verified bar yet.
+A JSON parser and printer in Lean, following RFC 8259. A reviewer who did not write this specification approves it, together with the statement file. The statements are in `Json/Spec.lean` and their proofs are in `Json/Proofs/SpecProofs.lean`; no reviewer has approved them yet, so nothing here counts toward the verified bar yet.
 
 Text is `List Char`. A Lean `Char` is one Unicode scalar value, so a string in this library can never hold half of a surrogate pair. That fact shapes two choices below.
 
@@ -100,23 +100,23 @@ No claim is made that the parser accepts every text the RFC grammar allows, or r
 
 ## Properties and their theorems
 
-Each property a reader can check in the page (`README.md`) names its theorem. The theorems are stated in `Spec.lean` and proved in `Proofs/SpecProofs.lean`. The refusal theorems are single inputs, one for each named rejection shape in the test harness; the tests in `tests/` cover each rule on many more inputs.
+Each property a reader can check in the page (`README.md`) names its theorem. The theorems are stated in `Json/Spec.lean` and proved in `Json/Proofs/SpecProofs.lean`. The refusal theorems are single inputs, one for each named rejection shape in the test harness; the tests in `tests/` cover each rule on many more inputs.
 
 | Property | Theorem |
 |----------|---------|
-| Parsing the printed form of a well formed value gives the value back | `Spec.parse_print` |
-| Reading the canonical text of a well formed decimal value gives the value back | `Spec.read_print` |
-| Every value the number reader returns is well formed | `Spec.readNumber_wf` |
-| The canonical text of a text's value re-reads to that value | `Spec.read_print_of_read` |
-| Two texts with the same value have the same canonical text | `Spec.canonical_eq_of_value_eq` |
-| Characters after a complete value, past the allowed whitespace, are refused | `Spec.rejects_trailing_after_value` |
-| A literal outside `true`, `false`, and `null` is refused | `Spec.rejects_bad_literal` |
-| A leading zero in a number inside a document is refused | `Spec.rejects_leading_zero_in_document` |
-| A bare minus sign is refused as a number text | `Spec.rejects_num_lone_minus` |
-| A leading zero in a number text is refused | `Spec.rejects_num_leading_zero` |
-| A point with no digit after it ends no number text | `Spec.rejects_num_trailing_point` |
-| A point with no integer part before it starts no number text | `Spec.rejects_num_leading_point` |
-| An exponent letter with no digits after it is refused | `Spec.rejects_num_bare_exponent` |
-| An exponent sign with no digits after it is refused | `Spec.rejects_num_exponent_sign_only` |
-| A leading plus sign is refused | `Spec.rejects_num_leading_plus` |
-| A letter where a digit must stand is refused | `Spec.rejects_num_nondigit` |
+| Parsing the printed form of a well formed value gives the value back | `Json.Spec.parse_print` |
+| Reading the canonical text of a well formed decimal value gives the value back | `Json.Spec.read_print` |
+| Every value the number reader returns is well formed | `Json.Spec.readNumber_wf` |
+| The canonical text of a text's value re-reads to that value | `Json.Spec.read_print_of_read` |
+| Two texts with the same value have the same canonical text | `Json.Spec.canonical_eq_of_value_eq` |
+| Characters after a complete value, past the allowed whitespace, are refused | `Json.Spec.rejects_trailing_after_value` |
+| A literal outside `true`, `false`, and `null` is refused | `Json.Spec.rejects_bad_literal` |
+| A leading zero in a number inside a document is refused | `Json.Spec.rejects_leading_zero_in_document` |
+| A bare minus sign is refused as a number text | `Json.Spec.rejects_num_lone_minus` |
+| A leading zero in a number text is refused | `Json.Spec.rejects_num_leading_zero` |
+| A point with no digit after it ends no number text | `Json.Spec.rejects_num_trailing_point` |
+| A point with no integer part before it starts no number text | `Json.Spec.rejects_num_leading_point` |
+| An exponent letter with no digits after it is refused | `Json.Spec.rejects_num_bare_exponent` |
+| An exponent sign with no digits after it is refused | `Json.Spec.rejects_num_exponent_sign_only` |
+| A leading plus sign is refused | `Json.Spec.rejects_num_leading_plus` |
+| A letter where a digit must stand is refused | `Json.Spec.rejects_num_nondigit` |

@@ -28,7 +28,7 @@ Written by `tests/run_tests.py`. Rerun it to check these numbers.
 
 ## Axiom check
 
-The output of `#print axioms` for the five named theorems, from `lake env lean Proofs/Verify.lean`:
+The output of `#print axioms` for the five named theorems, from `lake env lean Json/Proofs/Verify.lean`:
 
 - 'Json.Proofs.parse_print' depends on axioms: [propext, Classical.choice, Quot.sound]
 - 'Json.NumProofs.read_print' depends on axioms: [propext, Quot.sound]
